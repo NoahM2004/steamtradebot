@@ -1,0 +1,17 @@
+{
+    "username": "steam_account_name",
+    "password": "steam_account_password",
+    "twoFactorCode": "shared_secret",
+    "language": "en",
+    "ConfirmationCode": "conf_code",
+    "addmessage": "Hey! You just added me!"
+
+
+
+
+
+
+
+
+
+}
