@@ -6,7 +6,7 @@ const SteamUser = require('steam-user');
 const SteamTotp = require('steam-totp');
 const SteamCommunity = require('steamcommunity');
 const TradeOfferManager = require('steam-tradeoffer-manager');
-
+const CONFIG = require('./config.json');
 //logo
 console.log("")
 console.log("##    ## ######## ########     ###    ########  ########".rainbow);
@@ -87,19 +87,19 @@ const community = new SteamCommunity();
 const manager = new TradeOfferManager({
 	steam: client,
 	community: community,
-	language: 'de'
+	language: CONFIG.language
 });
 
 //Account Data
 
 const logOnOptions = {
-	accountName: 'YourAccountName',
-	password: 'YourAccountPassword',
-	twoFactorCode: SteamTotp.generateAuthCode('YourAuthCode')
+	accountName: CONFIG.username,
+	password: CONFIG.password,
+	twoFactorCode: SteamTotp.generateAuthCode(CONFIG.twoFactorCode)
 };
 
 //Trusted ID's
-var id = ['ADD', 'ID', 'HERE'];
+var id = ['steamid', 'steamid0', 'steamid1'];
 
 console.log("")
 console.log("Trusted SteamID's: ".cyan)
@@ -123,8 +123,10 @@ client.on('webSession', (sessionid, cookies) => {
 	manager.setCookies(cookies);
 
 	community.setCookies(cookies);
-	community.startConfirmationChecker(10000, 'YourConfirmationCode');
+	community.startConfirmationChecker(10000, CONFIG.ConfirmationCode);
 });
+
+//ID's durchlaufen
 
 Array.prototype.contains = function(k) {
     for(p in this)
@@ -132,6 +134,8 @@ Array.prototype.contains = function(k) {
             return true;
     return false;
 }
+
+
 //Bei neuer Handelsanfrage
 manager.on('newOffer', (offer) => {
 var tradeid =	offer.partner.getSteamID64();
@@ -154,9 +158,30 @@ var tradeid =	offer.partner.getSteamID64();
 	}
 });
 
+// wenn geadded wird
+
 client.on('friendRelationship', (steamid, relationship) => {
   if (relationship === 2) {
     client.addFriend(steamid);
-    client.chatMessage(steamid, 'Whats up? You just added me! Send me a trade if your ID is trusted and I will accept it');
+    client.chatMessage(steamid, CONFIG.addmessage);
   }
+});
+
+//Alle Nachrichten loggen
+
+client.on('friendMessage', (senderID, message) => {
+	console.log('Message from '.yellow + senderID + ': '.yellow + message.yellow)
+});
+
+//Unfinished
+
+client.on('friendMessage', (senderID, message) => {
+	if (message === "!logInvCont") {
+		manager.getInventoryContents(730, 2, true, function(err, inventory, currencies) {
+		    if (err) {
+		        console.log(err);
+		    }
+		    console.log(inventory);
+		});
+	}
 });
